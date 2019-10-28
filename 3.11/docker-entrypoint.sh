@@ -8,7 +8,7 @@ if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
 fi
 
 # Copy custom config file from configMap into the CASSANDRA_CONF_DIR
-CUSTOM_CONFIG="/custom/init/config/*"
+CUSTOM_CONFIG="/custom/cassandra/config/*"
 for cf in $CUSTOM_CONFIG
 do
   echo "Copying custom config file $cf into directory $CASSANDRA_CONFIG"
