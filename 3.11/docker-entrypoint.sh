@@ -4,7 +4,15 @@ set -e
 # first arg is `-f` or `--some-option`
 # or there are no args
 if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
-	set -- cassandra -f "$@"
+	set -- cassandra -R -f "$@"
+fi
+
+# Copy custom config file from configMap into the CASSANDRA_CONF_DIR
+CUSTOM_CONFIG_FILE="/custom/init/config/cassandra.yaml"
+if test -f "$CUSTOM_CONFIG_FILE"; then
+  echo "Copying custom config file $CUSTOM_CONFIG_FILE into directory $CASSANDRA_CONFIG"
+  cp -f $CUSTOM_CONFIG_FILE $CASSANDRA_CONFIG
+  #chown cassandra "$CASSANDRA_CONFIG/cassandra.yaml"
 fi
 
 # allow the container to be started with `--user`
@@ -24,16 +32,6 @@ _ip_address() {
 			exit
 		}
 	'
-}
-
-# "sed -i", but without "mv" (which doesn't work on a bind-mounted file, for example)
-_sed-in-place() {
-	local filename="$1"; shift
-	local tempFile
-	tempFile="$(mktemp)"
-	sed "$@" "$filename" > "$tempFile"
-	cat "$tempFile" > "$filename"
-	rm "$tempFile"
 }
 
 if [ "$1" = 'cassandra' ]; then
@@ -56,8 +54,7 @@ if [ "$1" = 'cassandra' ]; then
 	fi
 	: ${CASSANDRA_SEEDS:="$CASSANDRA_BROADCAST_ADDRESS"}
 
-	_sed-in-place "$CASSANDRA_CONFIG/cassandra.yaml" \
-		-r 's/(- seeds:).*/\1 "'"$CASSANDRA_SEEDS"'"/'
+        sed -ri 's/(- seeds:).*/\1 "'"$CASSANDRA_SEEDS"'"/' "$CASSANDRA_CONFIG/cassandra.yaml"
 
 	for yaml in \
 		broadcast_address \
@@ -72,8 +69,7 @@ if [ "$1" = 'cassandra' ]; then
 		var="CASSANDRA_${yaml^^}"
 		val="${!var}"
 		if [ "$val" ]; then
-			_sed-in-place "$CASSANDRA_CONFIG/cassandra.yaml" \
-				-r 's/^(# )?('"$yaml"':).*/\2 '"$val"'/'
+                    sed -ri 's/^(# )?('"$yaml"':).*/\2 '"$val"'/' "$CASSANDRA_CONFIG/cassandra.yaml"
 		fi
 	done
 
@@ -81,9 +77,9 @@ if [ "$1" = 'cassandra' ]; then
 		var="CASSANDRA_${rackdc^^}"
 		val="${!var}"
 		if [ "$val" ]; then
-			_sed-in-place "$CASSANDRA_CONFIG/cassandra-rackdc.properties" \
-				-r 's/^('"$rackdc"'=).*/\1 '"$val"'/'
+                    sed -ri 's/^('"$rackdc"'=).*/\1 '"$val"'/' "$CASSANDRA_CONFIG/cassandra-rackdc.properties"
 		fi
+                
 	done
 fi
 

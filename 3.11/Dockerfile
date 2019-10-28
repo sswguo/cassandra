@@ -155,8 +155,8 @@ RUN ln -s usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh # backwards c
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 RUN mkdir -p /var/lib/cassandra "$CASSANDRA_CONFIG" \
-	&& chown -R cassandra:cassandra /var/lib/cassandra "$CASSANDRA_CONFIG" \
-	&& chmod 777 /var/lib/cassandra "$CASSANDRA_CONFIG"
+	&& chown -R cassandra:cassandra /var/log/cassandra /var/lib/cassandra "$CASSANDRA_CONFIG" \
+	&& chmod 777 /var/log/cassandra /var/lib/cassandra "$CASSANDRA_CONFIG"
 VOLUME /var/lib/cassandra
 
 # 7000: intra-node communication
@@ -165,4 +165,4 @@ VOLUME /var/lib/cassandra
 # 9042: CQL
 # 9160: thrift service
 EXPOSE 7000 7001 7199 9042 9160
-CMD ["cassandra", "-f"]
+CMD ["cassandra", "-R", "-f"]
