@@ -8,12 +8,12 @@ if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
 fi
 
 # Copy custom config file from configMap into the CASSANDRA_CONF_DIR
-CUSTOM_CONFIG_FILE="/custom/init/config/cassandra.yaml"
-if test -f "$CUSTOM_CONFIG_FILE"; then
-  echo "Copying custom config file $CUSTOM_CONFIG_FILE into directory $CASSANDRA_CONFIG"
-  cp -f $CUSTOM_CONFIG_FILE $CASSANDRA_CONFIG
-  #chown cassandra "$CASSANDRA_CONFIG/cassandra.yaml"
-fi
+CUSTOM_CONFIG="/custom/init/config/*"
+for cf in $CUSTOM_CONFIG
+do
+  echo "Copying custom config file $cf into directory $CASSANDRA_CONFIG"
+  cp -f $cf $CASSANDRA_CONFIG
+done
 
 # allow the container to be started with `--user`
 if [ "$1" = 'cassandra' -a "$(id -u)" = '0' ]; then
