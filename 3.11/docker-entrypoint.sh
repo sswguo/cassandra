@@ -9,7 +9,7 @@ fi
 
 # Copy custom config file from configMap into the CASSANDRA_CONF_DIR
 CUSTOM_CONFIG="/custom/cassandra/config/*"
-if [ -d "$CUSTOM_CONFIG" ]; then
+if [ -d "/custom/cassandra/config" ]; then
   for cf in $CUSTOM_CONFIG
   do
     echo "Copying custom config file $cf into directory $CASSANDRA_CONFIG"
@@ -86,7 +86,7 @@ if [ "$1" = 'cassandra' ]; then
 fi
 
 ## === metrics agent
-#set -eux
+set -eux
 echo 'JVM_OPTS="$JVM_OPTS -javaagent:'/opt/jmx_prometheus/jmx_prometheus_javaagent-0.12.0.jar=7070:/opt/jmx_prometheus/cassandra.yml'"' >> $CASSANDRA_CONFIG/cassandra-env.sh
 
 exec "$@"
