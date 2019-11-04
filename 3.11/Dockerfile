@@ -41,6 +41,7 @@ RUN set -eux; \
 	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
 	gosu nobody true
 
+
 # https://wiki.apache.org/cassandra/DebianPackaging#Adding_Repository_Keys
 ENV GPG_KEYS \
 # gpg: key 0353B12C: public key "T Jake Luciani <jake@apache.org>" imported
@@ -57,7 +58,7 @@ RUN set -eux; \
 	rm -rf "$GNUPGHOME"; \
 	apt-key list
 
-ENV CASSANDRA_VERSION 3.11.4
+ENV CASSANDRA_VERSION 3.11.5
 
 RUN set -eux; \
 	\
@@ -159,10 +160,15 @@ RUN mkdir -p /var/lib/cassandra "$CASSANDRA_CONFIG" \
 	&& chmod 777 /var/log/cassandra /var/lib/cassandra "$CASSANDRA_CONFIG"
 VOLUME /var/lib/cassandra
 
+RUN mkdir -p /opt/jmx_prometheus
+COPY jmx_prometheus_javaagent/* /opt/jmx_prometheus/
 # 7000: intra-node communication
 # 7001: TLS intra-node communication
 # 7199: JMX
 # 9042: CQL
 # 9160: thrift service
-EXPOSE 7000 7001 7199 9042 9160
+## JMX Prometheus
+# 7070
+EXPOSE 7000 7001 7199 9042 9160 7070
 CMD ["cassandra", "-R", "-f"]
+

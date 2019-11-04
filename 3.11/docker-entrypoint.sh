@@ -9,11 +9,13 @@ fi
 
 # Copy custom config file from configMap into the CASSANDRA_CONF_DIR
 CUSTOM_CONFIG="/custom/cassandra/config/*"
-for cf in $CUSTOM_CONFIG
-do
-  echo "Copying custom config file $cf into directory $CASSANDRA_CONFIG"
-  cp -f $cf $CASSANDRA_CONFIG
-done
+if [ -d "$CUSTOM_CONFIG" ]; then
+  for cf in $CUSTOM_CONFIG
+  do
+    echo "Copying custom config file $cf into directory $CASSANDRA_CONFIG"
+    cp -f $cf $CASSANDRA_CONFIG
+  done
+fi
 
 # allow the container to be started with `--user`
 if [ "$1" = 'cassandra' -a "$(id -u)" = '0' ]; then
@@ -82,5 +84,9 @@ if [ "$1" = 'cassandra' ]; then
                 
 	done
 fi
+
+## === metrics agent
+#set -eux
+echo 'JVM_OPTS="$JVM_OPTS -javaagent:'/opt/jmx_prometheus/jmx_prometheus_javaagent-0.12.0.jar=7070:/opt/jmx_prometheus/cassandra.yml'"' >> $CASSANDRA_CONFIG/cassandra-env.sh
 
 exec "$@"
